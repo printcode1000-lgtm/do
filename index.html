@@ -503,19 +503,38 @@
 
             // استخدام File System Access API الحديثة
             if (window.showSaveFilePicker) {
-              const handle = await window.showSaveFilePicker({
-                suggestedName: "111.json",
-                types: [
-                  {
-                    description: "JSON Files",
-                    accept: { "application/json": [".json"] },
-                  },
-                ],
-              });
-              const writable = await handle.createWritable();
-              await writable.write(blob);
-              await writable.close();
-              alert("تم حفظ الملف بنجاح.");
+              // الطريقة الحديثة للحاسوب
+              try {
+                const handle = await window.showSaveFilePicker({
+                  suggestedName: "111.json",
+                  types: [
+                    {
+                      description: "JSON Files",
+                      accept: { "application/json": [".json"] },
+                    },
+                  ],
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+                alert("تم حفظ الملف بنجاح.");
+              } catch (err) {
+                if (err.name !== "AbortError") {
+                  // تجاهل خطأ إلغاء المستخدم للحفظ
+                  console.error("Error saving file:", err);
+                  alert("فشل حفظ الملف.");
+                }
+              }
+            } else {
+              // الطريقة البديلة للموبايل والمتصفحات الأخرى
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "111.json";
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
             }
           } catch (error) {
             console.error("Error exporting data:", error);
