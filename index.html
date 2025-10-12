@@ -337,6 +337,24 @@
         const newDateInput = document.getElementById("new-date-input");
         const storeName = "events";
 
+        // --- التحقق من استمرارية البيانات ---
+        async function checkAndRequestPersistence() {
+          if (navigator.storage && navigator.storage.persist) {
+            let isPersisted = await navigator.storage.persisted();
+            if (!isPersisted) {
+              // اطلب من المستخدم تثبيت البيانات
+              isPersisted = await navigator.storage.persist();
+            }
+            if (isPersisted) {
+              console.log("تمكين وضع استمرارية البيانات بنجاح.");
+            } else {
+              console.warn(
+                "لم يتم تمكين وضع استمرارية البيانات. قد يتم حذف البيانات تلقائيًا."
+              );
+            }
+          }
+        }
+
         let autoSaveTimer = null;
         let isCreatingNew = false;
 
@@ -941,6 +959,7 @@
 
         // تحميل البيانات عند بدء تشغيل الصفحة
         loadAndPopulateData();
+        checkAndRequestPersistence(); // طلب تثبيت البيانات لضمان عدم حذفها
 
         // Hide manual save button as it's no longer the primary method
         saveButton.style.display = "none";
