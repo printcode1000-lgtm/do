@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>عرض سجل الأحداث</title>
+    <style>
+      body {
+        font-family: "Tahoma", "Segoe UI", sans-serif;
+        background-color: #f0f2f5;
+        color: #1c1e21;
+        margin: 0;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+        width: 95%;
+        max-width: 1200px; /* حد أقصى للعرض على الشاشات الكبيرة */
+        min-height: 90vh; /* يسمح بالتمدد إذا زاد المحتوى */
+        margin: 20px auto; /* توسيط الحاوية */
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+      }
+      h1 {
+        text-align: center;
+        color: #0056b3;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 10px;
+      }
+      #save-status {
+        text-align: center;
+        color: #28a745;
+        font-weight: bold;
+        margin-top: -15px;
+        margin-bottom: 10px;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+      label {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 8px;
+        display: block;
+      }
+      select,
+      textarea,
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccd0d5;
+        font-size: 1em;
+        box-sizing: border-box; /* Ensures padding doesn't affect width */
+        transition: border-color 0.2s;
+      }
+      select:focus,
+      textarea:focus,
+      input[type="text"]:focus {
+        border-color: #0056b3;
+        outline: none;
+      }
+      select {
+        margin-bottom: 20px;
+      }
+      textarea {
+        resize: vertical;
+        background-color: #ffffff;
+        line-height: 1.6;
+        font-size: clamp(1em, 1.5vw, 1.1em); /* خط متجاوب */
+        flex-grow: 1;
+        margin-bottom: 15px;
+        min-height: 250px; /* تقليل الحد الأدنى للارتفاع */
+      }
+      .description-wrapper {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .meta-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 10px;
+      }
+      .meta-container {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .button-group {
+        display: flex;
+        flex-wrap: wrap; /* السماح للأزرار بالالتفاف على الشاشات الصغيرة */
+        gap: 10px; /* Adds space between buttons */
+        margin-bottom: 20px;
+      }
+      .button {
+        flex-grow: 1; /* Makes buttons share space equally */
+        padding: 10px 15px;
+        font-size: 1em;
+        font-weight: bold;
+        color: white;
+        background-color: #0056b3;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .button:hover {
+        background-color: #004494;
+      }
+      #save-changes-btn {
+        background-color: #28a745; /* Green color for save */
+        display: none; /* Hidden by default */
+      }
+      #save-changes-btn:hover {
+        background-color: #218838;
+      }
+      #add-new-event-btn {
+        background-color: #17a2b8; /* Teal color for add new */
+      }
+      #add-new-event-btn:hover {
+        background-color: #138496;
+      }
+      .meta-field {
+        flex: 1;
+        min-width: 150px; /* يمنع الحقول من أن تصبح ضيقة جداً */
+      }
+      /* Media Query for smaller screens */
+      @media (max-width: 600px) {
+        .meta-row {
+          flex-direction: column; /* تكديس الحقول عمودياً */
+          gap: 10px;
+        }
+        h1 {
+          font-size: 1.5em;
+        }
+      }
+      .link-input-group button.active {
+        background-color: #0056b3;
+        color: white;
+      }
+      .link-input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 5px;
+      }
+      .label-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start; /* يبدأ من اليمين في RTL */
+        margin-bottom: 8px;
+        gap: 15px; /* مسافة بين العنوان والزر */
+      }
+      .label-container label {
+        margin-bottom: 0; /* Override default margin */
+      }
+      .copy-btn {
+        background-color: #e9ecef;
+        border: 1px solid #ced4da;
+        padding: 3px 8px;
+        font-size: 0.8em;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .copy-btn:hover {
+        background-color: #dee2e6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>سجل الأحداث</h1>
+      <p id="save-status"></p>
+
+      <div class="button-group">
+        <button id="load-data-btn" class="button">
+          تحميل من ملف JSON وحفظ في القاعدة
+        </button>
+        <button id="add-new-event-btn" class="button">إضافة حدث جديد</button>
+        <button id="export-data-btn" class="button">
+          تصدير البيانات إلى ملف JSON
+        </button>
+        <button id="save-changes-btn" class="button">حفظ التعديلات</button>
+      </div>
+
+      <div id="date-selection-area">
+        <div>
+          <label for="date-selector">اختر تاريخًا:</label>
+          <select id="date-selector">
+            <option value="">-- يرجى اختيار تاريخ لعرض الوصف --</option>
+          </select>
+        </div>
+        <div id="new-date-entry" style="display: none; margin-bottom: 20px">
+          <label for="new-date-input">أدخل التاريخ الجديد:</label>
+          <input type="date" id="new-date-input" />
+        </div>
+      </div>
+
+      <div class="description-wrapper">
+        <div class="label-container">
+          <label for="description-display">الوصف:</label>
+          <button id="paste-description-btn" class="copy-btn">لصق</button>
+          <button id="copy-description-btn" class="copy-btn">نسخ</button>
+        </div>
+        <textarea
+          id="description-display"
+          placeholder="سيظهر الوصف هنا..."
+        ></textarea>
+        <div class="meta-container">
+          <div class="meta-row">
+            <div class="meta-field">
+              <label for="tag-selector">قوه الملف:</label>
+              <select id="tag-selector">
+                <option value="">لا اعرف</option>
+                <option value="اصلي">اصلي</option>
+                <option value="خطر">خطر</option>
+                <option value="لا يمكن تجاهله">لا يمكن تجاهله</option>
+                <option value="تم تقديمة">تم تقديمة</option>
+              </select>
+            </div>
+            <div class="meta-field">
+              <label for="condemnation-selector">ادانه:</label>
+              <select id="condemnation-selector">
+                <option value="">-- اختر --</option>
+                <option value="مدير عام مساعد الصيانة">
+                  مدير عام مساعد الصيانة
+                </option>
+                <option value="مدير عام">مدير عام</option>
+                <option value="مدير عام و مساعد">مدير عام و مساعد</option>
+                <option value="مدير عام مساعد+مقاول">
+                  مدير عام مساعد+مقاول
+                </option>
+                <option value="مدير عام+مساعد+مقاول">
+                  مدير عام+مساعد+مقاول
+                </option>
+
+                <option value="مقاول">مقاول</option>
+                <option value="لي">لي</option>
+                <option value="لصالحي">لصالحي</option>
+              </select>
+            </div>
+          </div>
+          <div
+            id="condemnation-details-wrapper"
+            style="display: none; margin-bottom: 10px"
+          >
+            <label for="condemnation-description">وصف الإدانة:</label>
+            <textarea
+              id="condemnation-description"
+              rows="3"
+              placeholder="أدخل تفاصيل الإدانة هنا..."
+            ></textarea>
+          </div>
+          <div class="meta-row">
+            <div class="meta-field" style="flex-grow: 2">
+              <label>روابط الملفات:</label>
+              <div id="file-links-container">
+                <!-- Dynamic link inputs will be added here -->
+              </div>
+              <button
+                type="button"
+                id="add-link-btn"
+                class="button"
+                style="
+                  margin-top: 10px;
+                  flex-grow: 0;
+                  padding: 5px 10px;
+                  font-size: 0.9em;
+                "
+              >
+                إضافة رابط
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <iframe
+        id="file-viewer"
+        src="about:blank"
+        style="
+          display: none;
+          width: 100%;
+          height: 500px;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          margin-bottom: 20px;
+        "
+      ></iframe>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const dateSelector = document.getElementById("date-selector");
+        const descriptionDisplay = document.getElementById(
+          "description-display"
+        );
+        const loadButton = document.getElementById("load-data-btn");
+        const tagSelector = document.getElementById("tag-selector");
+        const condemnationSelector = document.getElementById(
+          "condemnation-selector"
+        );
+        const addNewEventBtn = document.getElementById("add-new-event-btn");
+        const fileViewer = document.getElementById("file-viewer");
+        const exportButton = document.getElementById("export-data-btn");
+        const saveButton = document.getElementById("save-changes-btn");
+        const fileLinksContainer = document.getElementById(
+          "file-links-container"
+        );
+        const addLinkBtn = document.getElementById("add-link-btn");
+        const saveStatus = document.getElementById("save-status");
+        let eventsData = []; // سيتم تخزين البيانات هنا
+        const condemnationDetailsWrapper = document.getElementById(
+          "condemnation-details-wrapper"
+        );
+        const condemnationDescription = document.getElementById(
+          "condemnation-description"
+        );
+        const copyDescriptionBtn = document.getElementById(
+          "copy-description-btn"
+        );
+        const pasteDescriptionBtn = document.getElementById(
+          "paste-description-btn"
+        );
+
+        // --- IndexedDB Logic ---
+        const dbName = "EventsDB";
+        const dateSelectionArea = document.getElementById(
+          "date-selection-area"
+        );
+        const dateSelectorDiv = dateSelector.parentElement;
+        const newDateEntry = document.getElementById("new-date-entry");
+        const newDateInput = document.getElementById("new-date-input");
+        const storeName = "events";
+
+        let autoSaveTimer = null;
+        let isCreatingNew = false;
+
+        function openDB() {
+          return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, 1);
+
+            request.onupgradeneeded = (event) => {
+              const db = event.target.result;
+              if (!db.objectStoreNames.contains(storeName)) {
+                db.createObjectStore(storeName, {
+                  keyPath: "id",
+                  autoIncrement: true,
+                });
+              }
+            };
+
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onerror = (event) => reject(event.target.error);
+          });
+        }
+
+        async function saveDataToDB(data) {
+          try {
+            const db = await openDB();
+            const transaction = db.transaction(storeName, "readwrite");
+            const store = transaction.objectStore(storeName);
+
+            // مسح البيانات القديمة قبل إضافة الجديدة
+            store.clear();
+
+            // التأكد من وجود حقل 'tag'
+            const dataWithTags = data.map((item) => ({
+              ...item,
+              tag: item.tag || "",
+              // تحويل fileLink إلى مصفوفة إذا كان نصًا
+              fileLink: Array.isArray(item.fileLink)
+                ? item.fileLink
+                : item.fileLink
+                ? [item.fileLink]
+                : [],
+              condemnation: item.condemnation || "", // القيمة الافتراضية للادانة
+              condemnationDescription: item.condemnationDescription || "",
+            }));
+
+            dataWithTags.forEach((item) => {
+              store.add(item);
+            });
+
+            return new Promise((resolve, reject) => {
+              transaction.oncomplete = () => {
+                resolve();
+              };
+              transaction.onerror = (event) => {
+                alert("حدث خطأ أثناء حفظ البيانات.");
+                reject(event.target.error);
+              };
+            });
+          } catch (error) {
+            console.error("Failed to open DB:", error);
+            alert("لا يمكن فتح قاعدة البيانات.");
+          }
+        }
+
+        async function addNewRecordToDB(record) {
+          try {
+            const db = await openDB();
+            const transaction = db.transaction(storeName, "readwrite");
+            const store = transaction.objectStore(storeName);
+            const request = store.add(record);
+
+            return new Promise((resolve, reject) => {
+              request.onsuccess = () => {
+                resolve(request.result); // result is the key of the new record
+              };
+              request.onerror = (event) => {
+                alert("فشل إضافة الحدث الجديد.");
+                reject(event.target.error);
+              };
+            });
+          } catch (error) {
+            console.error("Failed to add record to DB:", error);
+            alert("لا يمكن فتح قاعدة البيانات للإضافة.");
+          }
+        }
+
+        async function updateRecordInDB(record) {
+          try {
+            const db = await openDB();
+            const transaction = db.transaction(storeName, "readwrite");
+            const store = transaction.objectStore(storeName);
+            const request = store.put(record);
+
+            return new Promise((resolve, reject) => {
+              request.onsuccess = () => {
+                showSaveStatus();
+                resolve(request.result);
+              };
+              request.onerror = (event) => {
+                alert("فشل تحديث السجل.");
+                reject(event.target.error);
+              };
+            });
+          } catch (error) {
+            console.error("Failed to update record in DB:", error);
+            alert("لا يمكن فتح قاعدة البيانات للتحديث.");
+          }
+        }
+
+        function readDataFromDB(keepId = false) {
+          return new Promise(async (resolve, reject) => {
+            try {
+              const db = await openDB();
+              const transaction = db.transaction(storeName, "readonly");
+              const store = transaction.objectStore(storeName);
+              const request = store.getAll();
+
+              request.onsuccess = () => {
+                if (keepId) {
+                  resolve(request.result);
+                } else {
+                  // إزالة مفتاح 'id' الذي أضافته IndexedDB قبل التصدير
+                  const cleanData = request.result.map(
+                    ({ id, ...rest }) => rest
+                  );
+                  resolve(cleanData);
+                }
+              };
+              request.onerror = (event) => reject(event.target.error);
+            } catch (error) {
+              reject(error);
+            }
+          });
+        }
+
+        // --- Event Listeners ---
+
+        loadButton.addEventListener("click", async () => {
+          try {
+            const response = await fetch("111.json");
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const fileData = await response.json();
+            await saveDataToDB(fileData);
+            // إعادة تحميل البيانات في الواجهة بعد الحفظ
+            await loadAndPopulateData();
+          } catch (error) {
+            console.error("Error loading or saving data:", error);
+            alert("فشل تحميل أو حفظ البيانات.");
+          }
+        });
+
+        exportButton.addEventListener("click", async () => {
+          try {
+            const dataFromDB = await readDataFromDB();
+            if (!dataFromDB || dataFromDB.length === 0) {
+              alert("لا توجد بيانات في قاعدة البيانات لتصديرها.");
+              return;
+            }
+
+            const jsonString = JSON.stringify(dataFromDB, null, 2);
+            const blob = new Blob([jsonString], { type: "application/json" });
+
+            // استخدام File System Access API الحديثة
+            if (window.showSaveFilePicker) {
+              const handle = await window.showSaveFilePicker({
+                suggestedName: "111.json",
+                types: [
+                  {
+                    description: "JSON Files",
+                    accept: { "application/json": [".json"] },
+                  },
+                ],
+              });
+              const writable = await handle.createWritable();
+              await writable.write(blob);
+              await writable.close();
+              alert("تم حفظ الملف بنجاح.");
+            }
+          } catch (error) {
+            console.error("Error exporting data:", error);
+            alert("فشل تصدير البيانات من IndexedDB.");
+          }
+        });
+
+        addNewEventBtn.addEventListener("click", () => {
+          isCreatingNew = true;
+          dateSelector.value = ""; // إلغاء تحديد أي تاريخ
+          descriptionDisplay.value = "";
+          tagSelector.value = "";
+          clearAndAddOneLinkInput();
+          condemnationSelector.value = "";
+          newDateInput.value = "";
+
+          // إظهار حقل إدخال التاريخ الجديد وإخفاء القائمة المنسدلة
+          dateSelectorDiv.style.display = "none";
+          newDateEntry.style.display = "block";
+
+          // تمكين الحقول للتعديل
+          descriptionDisplay.readOnly = false;
+          tagSelector.disabled = false;
+          condemnationSelector.disabled = false;
+
+          // إظهار زر الحفظ
+          saveButton.style.display = "block";
+          saveButton.textContent = "حفظ الحدث الجديد"; // تغيير نص الزر
+        });
+
+        saveButton.addEventListener("click", async () => {
+          const selectedIndex = dateSelector.value;
+          isCreatingNew = false; // Reset flag
+
+          // التحقق إذا كنا في وضع "إضافة جديد"
+          if (newDateEntry.style.display === "block") {
+            const newDateValue = newDateInput.value; // YYYY-MM-DD
+            if (!newDateValue || descriptionDisplay.value.trim() === "") {
+              alert("يرجى إدخال تاريخ صحيح وملء الوصف.");
+              return;
+            }
+            // تحويل التنسيق إلى DD-MM-YYYY
+            const [year, month, day] = newDateValue.split("-");
+            const formattedDate = `${day}-${month}-${year}`;
+
+            const fileLinks = Array.from(
+              fileLinksContainer.querySelectorAll("input")
+            )
+              .map((input) => input.value.trim())
+              .filter((link) => link !== "");
+            const newEvent = {
+              date: formattedDate,
+              description: descriptionDisplay.value,
+              tag: tagSelector.value,
+              fileLink: fileLinks,
+              condemnation: condemnationSelector.value,
+              condemnationDescription: condemnationDescription.value,
+            };
+            await addNewRecordToDB(newEvent);
+            await loadAndPopulateData(); // إعادة تحميل البيانات لتحديث الواجهة
+            showSaveStatus();
+            resetToSelectionMode();
+          } else {
+            // وضع "تحديث"
+            if (selectedIndex === "") {
+              alert("يرجى اختيار حدث أولاً لحفظ التعديلات.");
+              return;
+            }
+            const recordToUpdate = eventsData[selectedIndex];
+            if (recordToUpdate) {
+              const fileLinks = Array.from(
+                fileLinksContainer.querySelectorAll("input")
+              )
+                .map((input) => input.value.trim())
+                .filter((link) => link !== "");
+
+              recordToUpdate.description = descriptionDisplay.value;
+              recordToUpdate.tag = tagSelector.value;
+              recordToUpdate.fileLink = fileLinks;
+              recordToUpdate.condemnation = condemnationSelector.value;
+              recordToUpdate.condemnationDescription =
+                condemnationDescription.value;
+              await updateRecordInDB(recordToUpdate);
+            } else {
+              alert(
+                "لم يتم العثور على السجل لتحديثه. قد تحتاج إلى إعادة تحميل البيانات."
+              );
+            }
+          }
+        });
+
+        copyDescriptionBtn.addEventListener("click", () => {
+          const textToCopy = descriptionDisplay.value;
+          if (textToCopy) {
+            navigator.clipboard
+              .writeText(textToCopy)
+              .then(() => {
+                const originalText = copyDescriptionBtn.textContent;
+                copyDescriptionBtn.textContent = "تم النسخ!";
+                setTimeout(() => {
+                  copyDescriptionBtn.textContent = originalText;
+                }, 1500); // Revert after 1.5 seconds
+              })
+              .catch((err) => {
+                console.error("Failed to copy text: ", err);
+              });
+          }
+        });
+
+        pasteDescriptionBtn.addEventListener("click", async () => {
+          if (!navigator.clipboard.readText) {
+            alert("متصفحك لا يدعم لصق النص من الحافظة تلقائيًا.");
+            return;
+          }
+          try {
+            const textToPaste = await navigator.clipboard.readText();
+            descriptionDisplay.value = textToPaste;
+            triggerAutoSave(); // تفعيل الحفظ التلقائي بعد اللصق
+          } catch (err) {
+            console.error("Failed to read clipboard contents: ", err);
+          }
+        });
+
+        addLinkBtn.addEventListener("click", () => {
+          addLinkInput("", true); // true to trigger auto-save
+        });
+
+        function addLinkInput(value = "") {
+          const inputGroup = document.createElement("div");
+          inputGroup.className = "link-input-group";
+
+          const newInput = document.createElement("input");
+          newInput.type = "text";
+          newInput.placeholder = "ادخل رابط الملف هنا...";
+          newInput.value = value;
+          newInput.style.flexGrow = "1";
+          newInput.addEventListener("input", () => {
+            triggerAutoSave();
+          });
+
+          const viewBtn = document.createElement("button");
+          // حساب الرقم التسلسلي للرابط الجديد
+          const newIndex =
+            fileLinksContainer.querySelectorAll(".link-input-group").length + 1;
+          viewBtn.textContent = `عرض ${newIndex}`;
+          viewBtn.onclick = () => {
+            displayFile(newInput.value);
+            document
+              .querySelectorAll(".link-input-group button")
+              .forEach((btn) => btn.classList.remove("active"));
+            viewBtn.classList.add("active");
+          };
+
+          const removeBtn = document.createElement("button");
+          removeBtn.textContent = "إزالة";
+          removeBtn.onclick = () => {
+            if (confirm("هل أنت متأكد من أنك تريد حذف هذا الرابط؟")) {
+              inputGroup.remove();
+              triggerAutoSave();
+            }
+          };
+
+          inputGroup.appendChild(newInput);
+          inputGroup.appendChild(viewBtn);
+          inputGroup.appendChild(removeBtn);
+          fileLinksContainer.appendChild(inputGroup);
+        }
+
+        // --- UI Logic ---
+        async function loadAndPopulateData() {
+          try {
+            // محاولة القراءة من قاعدة البيانات أولاً
+            const dbData = await readDataFromDB(true); // true للحصول على البيانات مع الـ id
+            if (dbData && dbData.length > 0) {
+              eventsData = dbData;
+            } else {
+              // إذا كانت فارغة، قم بالتحميل من الملف
+              const response = await fetch("111.json");
+              if (!response.ok) throw new Error("File not found");
+              eventsData = await response.json();
+            }
+            populateDropdown(eventsData);
+          } catch (error) {
+            console.error("Could not fetch events data:", error);
+            descriptionDisplay.value =
+              "فشل في تحميل البيانات. حاول تحميلها من الملف أولاً.";
+          }
+        }
+
+        function populateDropdown(data) {
+          dateSelector.innerHTML =
+            '<option value="">-- يرجى اختيار تاريخ لعرض الوصف --</option>'; // Reset
+
+          // تحويل التواريخ إلى صيغة قابلة للفرز (YYYY-MM-DD) وفرزها
+          const sortedData = data
+            .map((item, index) => {
+              const [day, month, year] = item.date.split("-");
+              // إضافة حشوة للأيام والشهور المكونة من رقم واحد
+              const formattedDate = `${year}-${month.padStart(
+                2,
+                "0"
+              )}-${day.padStart(2, "0")}`;
+              return {
+                ...item,
+                originalIndex: index,
+                sortableDate: formattedDate, // Add id to the object if it exists
+              };
+            })
+            .sort((a, b) => a.sortableDate.localeCompare(b.sortableDate));
+
+          sortedData.forEach((item) => {
+            const option = document.createElement("option");
+            // استخدام الفهرس الأصلي كقيمة للربط بمصفوفة البيانات
+            option.value = item.originalIndex;
+            option.textContent = item.date; // عرض التاريخ فقط
+            dateSelector.appendChild(option);
+          });
+        }
+
+        dateSelector.addEventListener("change", (event) => {
+          const selectedIndex = event.target.value;
+          resetToSelectionMode();
+          saveButton.style.display = "none"; // إخفاء زر الحفظ عند تغيير الاختيار
+          fileViewer.style.display = "none";
+          fileViewer.src = "about:blank";
+          fileLinksContainer.innerHTML = "";
+
+          if (selectedIndex !== "") {
+            const selectedEvent = eventsData[selectedIndex];
+            descriptionDisplay.value = selectedEvent.description;
+            tagSelector.value = selectedEvent.tag || ""; // جلب القيمة المحفوظة أو الافتراضية
+            condemnationSelector.value = selectedEvent.condemnation || ""; // جلب قيمة الادانة
+            condemnationDescription.value =
+              selectedEvent.condemnationDescription || "";
+
+            handleCondemnationChange(); // إظهار/إخفاء وصف الإدانة حسب الحاجة
+
+            // التعامل مع روابط الملفات
+            const links = Array.isArray(selectedEvent.fileLink)
+              ? selectedEvent.fileLink
+              : [];
+
+            if (links.length > 0) {
+              links.forEach((link, index) => {
+                addLinkInputWithView(link, index); // إضافة حقول الإدخال مع زر العرض
+              });
+            } else {
+              addLinkInput(); // إضافة حقل إدخال فارغ
+            }
+
+            descriptionDisplay.readOnly = false; // السماح بالتعديل
+            tagSelector.disabled = false;
+            condemnationSelector.disabled = false;
+          } else {
+            descriptionDisplay.value = "";
+            tagSelector.value = "";
+            condemnationSelector.value = "";
+            condemnationDescription.value = "";
+            handleCondemnationChange();
+            descriptionDisplay.readOnly = true; // منع التعديل عند عدم وجود اختيار
+            tagSelector.disabled = true;
+            condemnationSelector.disabled = true;
+            clearAndAddOneLinkInput();
+          }
+        });
+
+        function addLinkInputWithView(link, index) {
+          const inputGroup = document.createElement("div");
+          inputGroup.className = "link-input-group";
+
+          const newInput = document.createElement("input");
+          newInput.type = "text";
+          newInput.placeholder = "ادخل رابط الملف هنا...";
+          newInput.value = link;
+          newInput.style.flexGrow = "1";
+          newInput.addEventListener("input", () => {
+            triggerAutoSave();
+          });
+
+          const viewBtn = document.createElement("button");
+          viewBtn.textContent = `عرض ${index + 1}`;
+          viewBtn.onclick = () => {
+            displayFile(newInput.value);
+            document
+              .querySelectorAll(".link-input-group button")
+              .forEach((btn) => btn.classList.remove("active"));
+            viewBtn.classList.add("active");
+          };
+
+          const removeBtn = document.createElement("button");
+          removeBtn.textContent = "إزالة";
+          removeBtn.onclick = () => {
+            if (confirm("هل أنت متأكد من أنك تريد حذف هذا الرابط؟")) {
+              inputGroup.remove();
+              triggerAutoSave();
+            }
+          };
+
+          inputGroup.appendChild(newInput);
+          inputGroup.appendChild(viewBtn);
+          inputGroup.appendChild(removeBtn);
+          fileLinksContainer.appendChild(inputGroup);
+        }
+
+        function displayFile(link) {
+          const driveRegex = /\/file\/d\/(.*?)\//;
+          const match = link.match(driveRegex);
+          if (match && match[1]) {
+            const fileId = match[1];
+            fileViewer.src = `https://drive.google.com/file/d/${fileId}/preview`;
+            fileViewer.style.display = "block";
+          } else {
+            // إذا لم يكن رابط جوجل درايف، يمكنك محاولة عرضه مباشرة أو إظهار رسالة
+            fileViewer.src = "about:blank";
+            fileViewer.style.display = "none";
+          }
+        }
+
+        function clearAndAddOneLinkInput() {
+          fileLinksContainer.innerHTML = "";
+          addLinkInput();
+        }
+
+        function resetToSelectionMode() {
+          isCreatingNew = false;
+          // إظهار القائمة المنسدلة وإخفاء حقل الإدخال
+          dateSelectorDiv.style.display = "block";
+          newDateEntry.style.display = "none";
+
+          // إعادة زر الحفظ إلى وضعه الافتراضي
+          saveButton.style.display = "none";
+          saveButton.textContent = "حفظ التعديلات";
+        }
+
+        function triggerAutoSave() {
+          clearTimeout(autoSaveTimer);
+          autoSaveTimer = setTimeout(async () => {
+            if (isCreatingNew) {
+              // Special handling for the very first save of a new event
+              const newDateValue = newDateInput.value;
+              if (newDateValue && descriptionDisplay.value.trim() !== "") {
+                // Use the existing save logic for creation
+                // The click handler will format the date
+                await saveButton.click();
+              }
+            } else if (dateSelector.value !== "") {
+              // Auto-save for existing records
+              const selectedIndex = dateSelector.value;
+              const recordToUpdate = eventsData[selectedIndex];
+              if (recordToUpdate) {
+                const fileLinks = Array.from(
+                  fileLinksContainer.querySelectorAll("input")
+                )
+                  .map((input) => input.value.trim())
+                  .filter((link) => link !== "");
+
+                recordToUpdate.description = descriptionDisplay.value;
+                recordToUpdate.tag = tagSelector.value;
+                recordToUpdate.fileLink = fileLinks;
+                recordToUpdate.condemnation = condemnationSelector.value;
+                recordToUpdate.condemnationDescription =
+                  condemnationDescription.value;
+                await updateRecordInDB(recordToUpdate);
+              }
+            }
+          }, 500); // 500ms delay
+        }
+
+        function showSaveStatus() {
+          saveStatus.textContent = "تم الحفظ تلقائيًا...";
+          saveStatus.style.opacity = 1;
+          setTimeout(() => {
+            saveStatus.style.opacity = 0;
+          }, 1000); // Hide after 1 second
+        }
+
+        // Attach auto-save trigger to all relevant inputs
+        [
+          descriptionDisplay,
+          tagSelector,
+          condemnationSelector,
+          newDateInput,
+          condemnationDescription,
+        ].forEach((element) => {
+          if (element.tagName.toLowerCase() === "select") {
+            element.addEventListener("change", triggerAutoSave);
+          } else {
+            element.addEventListener("input", triggerAutoSave);
+          }
+        });
+
+        condemnationSelector.addEventListener(
+          "change",
+          handleCondemnationChange
+        );
+
+        function handleCondemnationChange() {
+          if (condemnationSelector.value) {
+            condemnationDetailsWrapper.style.display = "block";
+          } else {
+            condemnationDetailsWrapper.style.display = "none";
+          }
+        }
+
+        // تحميل البيانات عند بدء تشغيل الصفحة
+        loadAndPopulateData();
+
+        // Hide manual save button as it's no longer the primary method
+        saveButton.style.display = "none";
+      });
+    </script>
+  </body>
+</html>
