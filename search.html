@@ -81,10 +81,7 @@
       #back-to-main-btn:hover {
         background-color: #5a6268;
       }
-      #results-container {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        padding: 15px;
+      #results-container {        
         flex-grow: 1;
         background-color: #f8f9fa;
       }
@@ -186,7 +183,6 @@
         <button
           id="back-to-main-btn"
           class="button"
-          onclick="window.location.href='index.html'"
         >
           العودة للرئيسية
         </button>
@@ -194,7 +190,7 @@
 
       <div id="results-info"></div>
       <div id="results-container">
-        <p>سيتم عرض نتائج البحث هنا.</p>
+        <p style="padding: 15px;">سيتم عرض نتائج البحث هنا.</p>
       </div>
     </div>
 
@@ -207,6 +203,9 @@
         const tagFilter = document.getElementById("tag-filter");
         const condemnationFilter = document.getElementById(
           "condemnation-filter"
+        );
+        const backToMainBtn = document.getElementById(
+          "back-to-main-btn"
         );
 
         const dbName = "EventsDB";
@@ -295,6 +294,8 @@
             goToEventBtn.textContent = "الانتقال للحدث";
             goToEventBtn.className = "button go-to-event-btn";
             goToEventBtn.onclick = () => {
+              // حفظ موضع التمرير قبل الانتقال
+              sessionStorage.setItem("scrollPosition", window.scrollY);
               // الانتقال للصفحة الرئيسية مع تمرير معرف الحدث
               window.location.href = `index.html?eventId=${item.id}`;
             };
@@ -318,6 +319,12 @@
           const tag = tagFilter.value;
           const condemnation = condemnationFilter.value;
           const results = await searchInDB(query, tag, condemnation);
+
+          // حفظ حالة البحث في sessionStorage
+          sessionStorage.setItem("searchQuery", query);
+          sessionStorage.setItem("searchTag", tag);
+          sessionStorage.setItem("searchCondemnation", condemnation);
+
           displayResults(results);
         }
 
@@ -330,8 +337,41 @@
         tagFilter.addEventListener("change", performSearch);
         condemnationFilter.addEventListener("change", performSearch);
 
-        // التركيز على حقل البحث عند تحميل الصفحة
-        searchInput.focus();
+        backToMainBtn.addEventListener("click", () => {
+            // لا نحتاج لحفظ موضع التمرير هنا لأنه سيتم مسح حالة البحث
+            // مسح حالة البحث عند العودة يدويًا للرئيسية
+            sessionStorage.removeItem("searchQuery");
+            sessionStorage.removeItem("searchTag");
+            sessionStorage.removeItem("searchCondemnation");
+            sessionStorage.removeItem("scrollPosition");
+            window.location.href = "index.html";
+        });
+
+        // استعادة حالة البحث عند تحميل الصفحة
+        async function restoreStateAndSearch() {
+          const savedQuery = sessionStorage.getItem("searchQuery");
+          const savedTag = sessionStorage.getItem("searchTag");
+          const savedCondemnation = sessionStorage.getItem("searchCondemnation");
+          const savedScroll = sessionStorage.getItem("scrollPosition");
+
+          if (savedQuery !== null || savedTag !== "" || savedCondemnation !== "") {
+            searchInput.value = savedQuery || "";
+            tagFilter.value = savedTag || "";
+            condemnationFilter.value = savedCondemnation || "";
+
+            await performSearch(); // إعادة تنفيذ البحث
+
+            if (savedScroll) {
+              // تأخير بسيط لضمان عرض النتائج قبل التمرير
+              setTimeout(() => window.scrollTo(0, parseInt(savedScroll, 10)), 100);
+            }
+          } else {
+             // التركيز على حقل البحث فقط إذا لم تكن هناك حالة محفوظة
+             searchInput.focus();
+          }
+        }
+
+        restoreStateAndSearch();
       });
     </script>
   </body>
