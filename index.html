@@ -729,10 +729,13 @@
             if (dbData && dbData.length > 0) {
               eventsData = dbData;
             } else {
-              // إذا كانت فارغة، قم بالتحميل من الملف
+              // إذا كانت فارغة، قم بالتحميل من الملف وحفظه في قاعدة البيانات
               const response = await fetch("111.json");
               if (!response.ok) throw new Error("File not found");
-              eventsData = await response.json();
+              const fileData = await response.json();
+              await saveDataToDB(fileData); // حفظ البيانات تلقائياً في قاعدة البيانات
+              // إعادة القراءة من قاعدة البيانات لضمان الحصول على البيانات مع الـ id
+              eventsData = await readDataFromDB(true);
             }
             populateDropdown(eventsData);
           } catch (error) {
