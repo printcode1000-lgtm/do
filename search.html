@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>صفحة البحث</title>
+    <style>
+      body {
+        font-family: "Tahoma", "Segoe UI", sans-serif;
+        background-color: #f0f2f5;
+        color: #1c1e21;
+        margin: 0;
+        scroll-behavior: smooth;
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+        width: 95%;
+        max-width: 1200px;
+        min-height: 90vh;
+        margin: 20px auto;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+      }
+      h1 {
+        text-align: center;
+        color: #0056b3;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 10px;
+      }
+      .filters {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+      }
+      .filter-group { flex: 1; min-width: 200px; }
+      .search-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      input[type="text"] {
+        flex-grow: 1;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccd0d5;
+        font-size: 1em;
+        box-sizing: border-box;
+      }
+      select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccd0d5;
+        font-size: 1em;
+        box-sizing: border-box;
+        background-color: white;
+      }
+      .button {
+        padding: 10px 15px;
+        font-size: 1em;
+        font-weight: bold;
+        color: white;
+        background-color: #0056b3;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      .button:hover {
+        background-color: #004494;
+      }
+      #back-to-main-btn {
+        background-color: #6c757d;
+      }
+      #back-to-main-btn:hover {
+        background-color: #5a6268;
+      }
+      #results-container {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        flex-grow: 1;
+        background-color: #f8f9fa;
+      }
+      .result-item {
+        padding: 10px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .result-item:last-child {
+        border-bottom: none;
+      }
+      .go-to-event-btn {
+        background-color: #17a2b8;
+        padding: 5px 10px;
+        font-size: 0.9em;
+        flex-shrink: 0; /* يمنع الزر من التقلص */
+      }
+      .go-to-event-btn:hover {
+        background-color: #138496;
+      }
+      .result-meta {
+        display: flex;
+        gap: 20px;
+        font-size: 0.9em;
+        color: #606770;
+        width: 100%;
+        margin-top: 8px;
+      }
+      .result-meta span {
+        font-weight: bold;
+        color: #444950;
+      }
+      #results-info {
+        margin-bottom: 10px;
+        font-weight: bold;
+        color: #0056b3;
+        padding: 5px;
+        background-color: #e7f3ff;
+        border-radius: 4px;
+        text-align: center;
+        display: none; /* Hidden by default */
+      }
+      .result-item .date {
+        font-weight: bold;
+        color: #0056b3;
+      }
+      .result-item .description {
+        margin-top: 5px;
+        white-space: pre-wrap; /* يحافظ على فواصل الأسطر */
+        flex-basis: 100%; /* يجعل الوصف يأخذ عرضًا كاملاً */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>البحث في سجل الأحداث</h1>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label for="tag-filter">فلترة حسب قوة الملف:</label>
+          <select id="tag-filter">
+            <option value="">الكل</option>
+            <option value="اصلي">اصلي</option>
+            <option value="خطر">خطر</option>
+            <option value="لا يمكن تجاهله">لا يمكن تجاهله</option>
+            <option value="تم تقديمة">تم تقديمة</option>
+            <option value="">لا اعرف</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="condemnation-filter">فلترة حسب الإدانة:</label>
+          <select id="condemnation-filter">
+            <option value="">الكل</option>
+            <option value="مدير عام مساعد الصيانة">
+              مدير عام مساعد الصيانة
+            </option>
+            <option value="مدير عام">مدير عام</option>
+            <option value="مدير عام و مساعد">مدير عام و مساعد</option>
+            <option value="مدير عام مساعد+مقاول">مدير عام مساعد+مقاول</option>
+            <option value="مدير عام+مساعد+مقاول">مدير عام+مساعد+مقاول</option>
+            <option value="مقاول">مقاول</option>
+            <option value="لي">لي</option>
+            <option value="لصالحي">لصالحي</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="search-bar">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="ابحث في الوصف، التاريخ، أو أي تفاصيل أخرى..."
+        />
+        <button id="search-btn" class="button">بحث</button>
+        <button
+          id="back-to-main-btn"
+          class="button"
+          onclick="window.location.href='index.html'"
+        >
+          العودة للرئيسية
+        </button>
+      </div>
+
+      <div id="results-info"></div>
+      <div id="results-container">
+        <p>سيتم عرض نتائج البحث هنا.</p>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const searchInput = document.getElementById("search-input");
+        const searchBtn = document.getElementById("search-btn");
+        const resultsContainer = document.getElementById("results-container");
+        const resultsInfo = document.getElementById("results-info");
+        const tagFilter = document.getElementById("tag-filter");
+        const condemnationFilter = document.getElementById(
+          "condemnation-filter"
+        );
+
+        const dbName = "EventsDB";
+        const storeName = "events";
+
+        function openDB() {
+          return new Promise((resolve, reject) => {
+            const request = indexedDB.open(dbName, 1);
+            request.onsuccess = (event) => resolve(event.target.result);
+            request.onerror = (event) => reject(event.target.error);
+          });
+        }
+
+        function normalizeArabic(text) {
+          if (!text) return "";
+          return text
+            .normalize("NFD")
+            .replace(/[\u064B-\u065F\u0670]/g, "") // إزالة التشكيل والتنوين
+            .replace(/[أإآ]/g, "ا") // توحيد الهمزات على الألف
+            .replace(/ؤ/g, "و") // توحيد الهمزة على الواو
+            .replace(/ئ/g, "ي") // توحيد الهمزة على الياء
+            .replace(/ة/g, "ه"); // توحيد التاء المربوطة
+        }
+
+        async function searchInDB(query, tag, condemnation) {
+          const db = await openDB();
+          const transaction = db.transaction(storeName, "readonly");
+          const store = transaction.objectStore(storeName);
+          const request = store.getAll();
+
+          return new Promise((resolve, reject) => {
+            request.onsuccess = () => {
+              const allData = request.result;
+              if (!query && !tag && !condemnation) {
+                resolve([]); // لا ترجع شيئًا إذا كانت جميع حقول البحث فارغة
+                return;
+              }
+              const normalizedQuery = normalizeArabic(query.toLowerCase());
+
+              const results = allData.filter((item) => {
+                const textMatch =
+                  !query ||
+                  normalizeArabic(item.description?.toLowerCase()).includes(
+                    normalizedQuery
+                  ) ||
+                  item.date?.toLowerCase().includes(normalizedQuery) || // التاريخ لا يحتاج تطبيع عربي
+                  normalizeArabic(
+                    item.condemnationDescription?.toLowerCase()
+                  ).includes(normalizedQuery);
+
+                const tagMatch = !tag || (item.tag || "") === tag;
+
+                const condemnationMatch =
+                  !condemnation || (item.condemnation || "") === condemnation;
+
+                return textMatch && tagMatch && condemnationMatch;
+              });
+
+              resolve(results);
+            };
+            request.onerror = (event) => reject(event.target.error);
+          });
+        }
+
+        function displayResults(results) {
+          resultsContainer.innerHTML = "";
+          resultsInfo.style.display = "none";
+
+          if (results.length === 0) {
+            resultsContainer.innerHTML = "<p>لم يتم العثور على نتائج.</p>";
+            return;
+          }
+
+          // عرض عدد النتائج
+          resultsInfo.textContent = `تم العثور على ${results.length} نتائج.`;
+          resultsInfo.style.display = "block";
+
+          // فرز النتائج حسب التاريخ (الأحدث أولاً)
+          results.sort((a, b) => new Date(b.date.split('-').reverse().join('-')) - new Date(a.date.split('-').reverse().join('-')));
+
+          results.forEach((item) => {
+            const resultDiv = document.createElement("div");
+            resultDiv.className = "result-item";
+
+            const goToEventBtn = document.createElement("button");
+            goToEventBtn.textContent = "الانتقال للحدث";
+            goToEventBtn.className = "button go-to-event-btn";
+            goToEventBtn.onclick = () => {
+              // الانتقال للصفحة الرئيسية مع تمرير معرف الحدث
+              window.location.href = `index.html?eventId=${item.id}`;
+            };
+
+            resultDiv.innerHTML = `
+              <div class="date">التاريخ: ${item.date || "غير محدد"}</div>
+              <div class="description">${item.description || "لا يوجد وصف."}</div>
+              <div class="result-meta">
+                <div>قوة الملف: <span>${item.tag || "لا اعرف"}</span></div>
+                <div>الإدانة: <span>${item.condemnation || "لا يوجد"}</span></div>
+              </div>
+            `;
+
+            resultDiv.insertBefore(goToEventBtn, resultDiv.firstChild); // إضافة الزر قبل التاريخ
+            resultsContainer.appendChild(resultDiv);
+          });
+        }
+
+        async function performSearch() {
+          const query = searchInput.value.trim();
+          const tag = tagFilter.value;
+          const condemnation = condemnationFilter.value;
+          const results = await searchInDB(query, tag, condemnation);
+          displayResults(results);
+        }
+
+        searchBtn.addEventListener("click", performSearch);
+        searchInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") {
+            performSearch();
+          }
+        });
+        tagFilter.addEventListener("change", performSearch);
+        condemnationFilter.addEventListener("change", performSearch);
+
+        // التركيز على حقل البحث عند تحميل الصفحة
+        searchInput.focus();
+      });
+    </script>
+  </body>
+</html>
+         
+    </script>
+  </body>
+</html>

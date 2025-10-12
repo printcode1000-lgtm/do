@@ -184,6 +184,13 @@
         <button id="export-data-btn" class="button">
           تصدير البيانات إلى ملف JSON
         </button>
+        <button
+          id="go-to-search-btn"
+          class="button"
+          onclick="window.location.href='search.html'"
+        >
+          الانتقال إلى صفحة البحث
+        </button>
         <button id="save-changes-btn" class="button">حفظ التعديلات</button>
       </div>
 
@@ -736,6 +743,24 @@
               await saveDataToDB(fileData); // حفظ البيانات تلقائياً في قاعدة البيانات
               // إعادة القراءة من قاعدة البيانات لضمان الحصول على البيانات مع الـ id
               eventsData = await readDataFromDB(true);
+            }
+
+            // التحقق من وجود eventId في الرابط
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventIdToSelect = urlParams.get("eventId");
+
+            if (eventIdToSelect) {
+              // البحث عن الفهرس الأصلي للحدث باستخدام الـ id
+              const originalIndex = eventsData.findIndex(
+                (event) => event.id == eventIdToSelect
+              );
+              if (originalIndex !== -1) {
+                // انتظر قليلاً قبل التحديد لضمان اكتمال تحميل القائمة
+                setTimeout(() => {
+                  dateSelector.value = originalIndex;
+                  dateSelector.dispatchEvent(new Event("change")); // تفعيل حدث التغيير لعرض التفاصيل
+                }, 100); // تأخير بسيط
+              }
             }
             populateDropdown(eventsData);
           } catch (error) {
