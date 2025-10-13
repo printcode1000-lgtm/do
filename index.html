@@ -184,11 +184,7 @@
         <button id="export-data-btn" class="button">
           تصدير البيانات إلى ملف JSON
         </button>
-        <button
-          id="go-to-search-btn"
-          class="button"
-          onclick="window.location.href='search.html'"
-        >
+        <button id="go-to-search-btn" class="button">
           الانتقال إلى صفحة البحث
         </button>
         <button id="save-changes-btn" class="button">حفظ التعديلات</button>
@@ -333,6 +329,7 @@
         const pasteDescriptionBtn = document.getElementById(
           "paste-description-btn"
         );
+        const goToSearchBtn = document.getElementById("go-to-search-btn");
 
         // --- IndexedDB Logic ---
         const dbName = "EventsDB";
@@ -681,6 +678,22 @@
           } catch (err) {
             console.error("Failed to read clipboard contents: ", err);
           }
+        });
+
+        goToSearchBtn.addEventListener("click", () => {
+          // التحقق إذا كان المستخدم قد أتى من صفحة البحث (عبر eventId)
+          const urlParams = new URLSearchParams(window.location.search);
+          const eventId = urlParams.get("eventId");
+
+          if (!eventId) {
+            // إذا لم يكن هناك eventId، فالمستخدم يبدأ بحثًا جديدًا، لذا نمسح الحالة القديمة
+            sessionStorage.removeItem("searchQuery");
+            sessionStorage.removeItem("searchTag");
+            sessionStorage.removeItem("searchCondemnation");
+            sessionStorage.removeItem("scrollPosition");
+          }
+          // في كلتا الحالتين، انتقل إلى صفحة البحث
+          window.location.href = "search.html";
         });
 
         addLinkBtn.addEventListener("click", () => {

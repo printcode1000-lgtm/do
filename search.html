@@ -137,6 +137,10 @@
         white-space: pre-wrap; /* يحافظ على فواصل الأسطر */
         flex-basis: 100%; /* يجعل الوصف يأخذ عرضًا كاملاً */
       }
+      mark {
+        background-color: #ffeb3b; /* لون التمييز */
+        padding: 0 2px;
+      }
     </style>
   </head>
   <body>
@@ -270,6 +274,42 @@
           });
         }
 
+        function highlightText(text, query) {
+          if (!query || !text) {
+            return text;
+          }
+          // تطبيع مصطلح البحث لإزالة الهمزات والتاء المربوطة
+          const normalizedQuery = normalizeArabic(query.toLowerCase());
+          const trimmedQuery = normalizedQuery.trim();
+
+          if (trimmedQuery === "") {
+            return text;
+          }
+
+          // بناء تعبير نمطي يسمح بوجود علامات التشكيل بين الحروف
+          const diacritics = "[\\u064B-\\u065F\\u0670]*"; // نطاق علامات التشكيل
+          const regexPattern = trimmedQuery
+            .split("")
+            .map((char) => {
+              switch (char) {
+                case "ا":
+                  return "[أإآا]";
+                case "ي":
+                  return "[يئ]";
+                case "و":
+                  return "[وؤ]";
+                case "ه":
+                  return "[هة]";
+                default:
+                  return char;
+              }
+            })
+            .join(diacritics);
+          const regex = new RegExp(`(${regexPattern})`, "gi");
+
+          return text.replace(regex, "<mark>$&</mark>");
+        }
+
         function displayResults(results) {
           resultsContainer.innerHTML = "";
           resultsInfo.style.display = "none";
@@ -282,6 +322,9 @@
           // عرض عدد النتائج
           resultsInfo.textContent = `تم العثور على ${results.length} نتائج.`;
           resultsInfo.style.display = "block";
+
+          // الحصول على نص البحث الأصلي لتمريره لدالة التمييز
+          const query = searchInput.value.trim();
 
           // فرز النتائج حسب التاريخ (الأحدث أولاً)
           results.sort((a, b) => new Date(b.date.split('-').reverse().join('-')) - new Date(a.date.split('-').reverse().join('-')));
@@ -300,9 +343,11 @@
               window.location.href = `index.html?eventId=${item.id}`;
             };
 
+            const highlightedDescription = highlightText(item.description, query);
+
             resultDiv.innerHTML = `
               <div class="date">التاريخ: ${item.date || "غير محدد"}</div>
-              <div class="description">${item.description || "لا يوجد وصف."}</div>
+              <div class="description">${highlightedDescription || "لا يوجد وصف."}</div>
               <div class="result-meta">
                 <div>قوة الملف: <span>${item.tag || "لا اعرف"}</span></div>
                 <div>الإدانة: <span>${item.condemnation || "لا يوجد"}</span></div>
