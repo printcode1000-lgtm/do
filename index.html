@@ -10,6 +10,7 @@
         background-color: #f0f2f5;
         color: #1c1e21;
         margin: 0;
+        padding-top: 60px; /* لإعطاء مساحة لشريط التنقل الثابت */
       }
       .container {
         background-color: #ffffff;
@@ -18,8 +19,8 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
         width: 95%;
         max-width: 1200px; /* حد أقصى للعرض على الشاشات الكبيرة */
-        min-height: 90vh; /* يسمح بالتمدد إذا زاد المحتوى */
-        margin: 20px auto; /* توسيط الحاوية */
+        min-height: calc(100vh - 80px); /* يسمح بالتمدد إذا زاد المحتوى */
+        margin: 0 auto 20px; /* توسيط الحاوية */
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -169,9 +170,36 @@
       .copy-btn:hover {
         background-color: #dee2e6;
       }
+      /* شريط التنقل العلوي */
+      .top-nav {
+        background-color: #343a40;
+        padding: 10px 0;
+        text-align: center;
+        position: fixed; /* أو sticky */
+        top: 0;
+        right: 0;
+        left: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .top-nav a.nav-button {
+        color: white;
+        padding: 8px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin: 0 10px;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
+    <nav class="top-nav">
+      <a href="index.html" class="nav-button button">الرئيسية</a>
+      <a href="topics.html" class="nav-button button">الموضوعات</a>
+      <a href="search.html" id="nav-search-btn" class="nav-button button"
+        >بحث</a
+      >
+    </nav>
     <div class="container">
       <h1>سجل الأحداث</h1>
       <p id="save-status"></p>
@@ -180,7 +208,6 @@
         <button id="load-data-btn" class="button">تحميل و حفظ</button>
         <button id="add-new-event-btn" class="button">حدث جديد</button>
         <button id="export-data-btn" class="button">تصدير</button>
-        <button id="go-to-search-btn" class="button">بحث</button>
         <button id="save-changes-btn" class="button">حفظ التعديلات</button>
       </div>
 
@@ -323,9 +350,7 @@
         const pasteDescriptionBtn = document.getElementById(
           "paste-description-btn"
         );
-        const goToSearchBtn = document.getElementById("go-to-search-btn");
-
-        // --- IndexedDB Logic ---
+        const navSearchBtn = document.getElementById("nav-search-btn");
         const dbName = "EventsDB";
         const dateSelectionArea = document.getElementById(
           "date-selection-area"
@@ -674,7 +699,7 @@
           }
         });
 
-        goToSearchBtn.addEventListener("click", () => {
+        navSearchBtn.addEventListener("click", (e) => {
           // التحقق إذا كان المستخدم قد أتى من صفحة البحث (عبر eventId)
           const urlParams = new URLSearchParams(window.location.search);
           const eventId = urlParams.get("eventId");
@@ -687,7 +712,8 @@
             sessionStorage.removeItem("scrollPosition");
           }
           // في كلتا الحالتين، انتقل إلى صفحة البحث
-          window.location.href = "search.html";
+          // لا نوقف السلوك الافتراضي للرابط
+          // window.location.href = "search.html";
         });
 
         addLinkBtn.addEventListener("click", () => {

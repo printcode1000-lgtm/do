@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>صفحة الموضوعات</title>
+    <style>
+      body {
+        font-family: "Tahoma", "Segoe UI", sans-serif;
+        background-color: #f0f2f5;
+        color: #1c1e21;
+        margin: 0;
+        padding-top: 60px; /* لإعطاء مساحة لشريط التنقل الثابت */
+      }
+      .container {
+        background-color: #ffffff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
+        width: 95%;
+        max-width: 1200px;
+        min-height: calc(100vh - 80px);
+        margin: 0 auto 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+      }
+      h1 {
+        text-align: center;
+        color: #0056b3;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 10px;
+      }
+      label {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 8px;
+        display: block;
+      }
+      select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #ccd0d5;
+        font-size: 1em;
+        box-sizing: border-box;
+        transition: border-color 0.2s;
+        margin-bottom: 20px;
+      }
+      select:focus {
+        border-color: #0056b3;
+        outline: none;
+      }
+      /* شريط التنقل العلوي */
+      .top-nav {
+        background-color: #343a40;
+        padding: 10px 0;
+        text-align: center;
+        position: fixed; /* أو sticky */
+        top: 0;
+        right: 0;
+        left: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .top-nav a.nav-button {
+        color: white;
+        padding: 8px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin: 0 10px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="top-nav">
+      <a href="index.html" class="nav-button button">الرئيسية</a>
+      <a href="topics.html" class="nav-button button">الموضوعات</a>
+      <a href="search.html" class="nav-button button">بحث</a>
+    </nav>
+    <div class="container">
+      <h1>الموضوعات</h1>
+      <div>
+        <label for="topic-selector">اختر موضوعًا:</label>
+        <select id="topic-selector">
+          <!-- سيتم ملء الخيارات بواسطة جافاسكريبت -->
+        </select>
+      </div>
+      <p>سيتم عرض محتوى متعلق بالموضوع المختار هنا.</p>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const topicSelector = document.getElementById("topic-selector");
+
+        // هذه هي قائمة النصوص التي سيتم استخدامها لملء القائمة المنسدلة
+        const topicsList = [
+          "مخالفات المقاول",
+          "تقصير إداري",
+          "تنسيق أعمال",
+          "سلامة وصحة مهنية",
+          "طلبات ومراسلات",
+          "موضوع عام",
+        ];
+
+        // إضافة خيار افتراضي
+        topicSelector.innerHTML =
+          '<option value="">-- اختر موضوعًا --</option>';
+
+        // ملء القائمة المنسدلة من قائمة النصوص
+        topicsList.forEach((topic) => {
+          const option = document.createElement("option");
+          option.value = topic; // استخدام النص كقيمة
+          option.textContent = topic; // استخدام النص كعنوان ظاهر
+          topicSelector.appendChild(option);
+        });
+      });
+    </script>
+  </body>
+</html>

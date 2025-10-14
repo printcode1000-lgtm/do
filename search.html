@@ -11,6 +11,7 @@
         color: #1c1e21;
         margin: 0;
         scroll-behavior: smooth;
+        padding-top: 60px; /* لإعطاء مساحة لشريط التنقل الثابت */
       }
       .container {
         background-color: #ffffff;
@@ -19,8 +20,8 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.1);
         width: 95%;
         max-width: 1200px;
-        min-height: 90vh;
-        margin: 20px auto;
+        min-height: calc(100vh - 80px);
+        margin: 0 auto 20px;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -141,9 +142,34 @@
         background-color: #ffeb3b; /* لون التمييز */
         padding: 0 2px;
       }
+      /* شريط التنقل العلوي */
+      .top-nav {
+        background-color: #343a40;
+        padding: 10px 0;
+        text-align: center;
+        position: fixed; /* أو sticky */
+        top: 0;
+        right: 0;
+        left: 0;
+        z-index: 1000;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .top-nav a.nav-button {
+        color: white;
+        padding: 8px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin: 0 10px;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
+    <nav class="top-nav">
+      <a href="index.html" id="nav-back-to-main-btn" class="nav-button button">الرئيسية</a>
+      <a href="topics.html" class="nav-button button">الموضوعات</a>
+      <a href="search.html" class="nav-button button">بحث</a>
+    </nav>
     <div class="container">
       <h1>البحث في سجل الأحداث</h1>
 
@@ -184,12 +210,6 @@
           placeholder="ابحث في الوصف، التاريخ، أو أي تفاصيل أخرى..."
         />
         <button id="search-btn" class="button">بحث</button>
-        <button
-          id="back-to-main-btn"
-          class="button"
-        >
-          العودة للرئيسية
-        </button>
       </div>
 
       <div id="results-info"></div>
@@ -208,9 +228,7 @@
         const condemnationFilter = document.getElementById(
           "condemnation-filter"
         );
-        const backToMainBtn = document.getElementById(
-          "back-to-main-btn"
-        );
+        const navBackToMainBtn = document.getElementById("nav-back-to-main-btn");
 
         const dbName = "EventsDB";
         const storeName = "events";
@@ -382,14 +400,15 @@
         tagFilter.addEventListener("change", performSearch);
         condemnationFilter.addEventListener("change", performSearch);
 
-        backToMainBtn.addEventListener("click", () => {
-            // لا نحتاج لحفظ موضع التمرير هنا لأنه سيتم مسح حالة البحث
-            // مسح حالة البحث عند العودة يدويًا للرئيسية
-            sessionStorage.removeItem("searchQuery");
-            sessionStorage.removeItem("searchTag");
-            sessionStorage.removeItem("searchCondemnation");
-            sessionStorage.removeItem("scrollPosition");
-            window.location.href = "index.html";
+        navBackToMainBtn.addEventListener("click", (e) => {
+          e.preventDefault(); // منع الانتقال الفوري للسماح بمسح الحالة
+          // لا نحتاج لحفظ موضع التمرير هنا لأنه سيتم مسح حالة البحث
+          // مسح حالة البحث عند العودة يدويًا للرئيسية
+          sessionStorage.removeItem("searchQuery");
+          sessionStorage.removeItem("searchTag");
+          sessionStorage.removeItem("searchCondemnation");
+          sessionStorage.removeItem("scrollPosition");
+          window.location.href = "index.html";
         });
 
         // استعادة حالة البحث عند تحميل الصفحة
