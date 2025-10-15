@@ -213,11 +213,15 @@
 
       <div id="date-selection-area">
         <div>
-          <label for="date-selector">اختر تاريخًا:</label>
+          <div class="label-container">
+            <label for="date-selector">اختر تاريخًا:</label>
+            <button id="copy-date-btn" class="copy-btn">نسخ التاريخ</button>
+          </div>
           <select id="date-selector">
             <option value="">-- يرجى اختيار تاريخ لعرض الوصف --</option>
           </select>
         </div>
+
         <div id="new-date-entry" style="display: none; margin-bottom: 20px">
           <label for="new-date-input">أدخل التاريخ الجديد:</label>
           <input type="date" id="new-date-input" />
@@ -358,6 +362,7 @@
         const dateSelectorDiv = dateSelector.parentElement;
         const newDateEntry = document.getElementById("new-date-entry");
         const newDateInput = document.getElementById("new-date-input");
+        const copyDateBtn = document.getElementById("copy-date-btn");
         const storeName = "events";
 
         // --- التحقق من استمرارية البيانات ---
@@ -673,6 +678,27 @@
           }
         });
 
+        copyDateBtn.addEventListener("click", () => {
+          const selectedOption =
+            dateSelector.options[dateSelector.selectedIndex];
+          if (selectedOption && selectedOption.value !== "") {
+            const dateToCopy = selectedOption.textContent;
+            navigator.clipboard
+              .writeText(dateToCopy)
+              .then(() => {
+                const originalText = copyDateBtn.textContent;
+                copyDateBtn.textContent = "تم النسخ!";
+                setTimeout(() => {
+                  copyDateBtn.textContent = originalText;
+                }, 1500);
+              })
+              .catch((err) => {
+                console.error("Failed to copy date: ", err);
+                alert("فشل نسخ التاريخ.");
+              });
+          }
+        });
+
         copyDescriptionBtn.addEventListener("click", () => {
           const textToCopy = descriptionDisplay.value;
           if (textToCopy) {
@@ -918,8 +944,28 @@
             }
           };
 
+          const downloadBtn = document.createElement("button");
+          downloadBtn.textContent = "تحميل";
+          downloadBtn.onclick = () => {
+            const link = newInput.value.trim();
+            if (!link) {
+              alert("الرابط فارغ.");
+              return;
+            }
+            const driveRegex = /\/file\/d\/(.*?)\//;
+            const match = link.match(driveRegex);
+            if (match && match[1]) {
+              const fileId = match[1];
+              const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+              window.open(downloadUrl, "_blank");
+            } else {
+              window.open(link, "_blank"); // For other links, try opening directly
+            }
+          };
+
           inputGroup.appendChild(newInput);
           inputGroup.appendChild(viewBtn);
+          inputGroup.appendChild(downloadBtn);
           inputGroup.appendChild(removeBtn);
           fileLinksContainer.appendChild(inputGroup);
         }

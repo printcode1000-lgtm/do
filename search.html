@@ -235,7 +235,23 @@
 
         function openDB() {
           return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName, 1);
+            const request = indexedDB.open(dbName, 2); // استخدام الإصدار 2 ليتوافق مع باقي الصفحات
+
+            // هذا الجزء ضروري لإنشاء قاعدة البيانات بشكل صحيح إذا لم تكن موجودة
+            request.onupgradeneeded = (event) => {
+              const db = event.target.result;
+              if (!db.objectStoreNames.contains(storeName)) {
+                db.createObjectStore(storeName, {
+                  keyPath: "id",
+                  autoIncrement: true,
+                });
+              }
+              const topicsStoreName = "topicsContent";
+              if (!db.objectStoreNames.contains(topicsStoreName)) {
+                db.createObjectStore(topicsStoreName, { keyPath: "id" });
+              }
+            };
+
             request.onsuccess = (event) => resolve(event.target.result);
             request.onerror = (event) => reject(event.target.error);
           });

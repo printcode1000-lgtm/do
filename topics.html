@@ -116,8 +116,7 @@
         z-index: 1;
         background-color: transparent;
         color: inherit;
-        resize: vertical;
-        pointer-events: none; /* السماح للنقرات بالمرور إلى الطبقة السفلية */
+        pointer-events: none; /* السماح للنقرات بالمرور إلى الطبقة السفلية بشكل افتراضي */
       }
       .editor-wrapper > #highlighter {
         z-index: 0;
@@ -198,8 +197,8 @@
         // قائمة الموضوعات مع معرفات فريدة
         // تم تصحيح المعرفات المكررة
         const topicsList = [
-          { id: "1", name: "مخالفات المقاول" },
-          { id: "2", name: "تقصير إداري" },
+          { id: "1", name: "مسؤوليه المهندس المشرف" },
+          { id: "2", name: "الحيادية والعدل" },
           { id: "3", name: "تنسيق أعمال" },
           { id: "4", name: "سلامة وصحة مهنية" },
           { id: "5", name: "طلبات ومراسلات" },
@@ -478,17 +477,20 @@
               highlighter.scrollLeft = textarea.scrollLeft;
             });
 
-            // عند النقر على المحرر، يتم التركيز على منطقة الكتابة
-            let clickTimer = null;
-            highlighter.addEventListener("click", () => {
-              clearTimeout(clickTimer); // إلغاء المؤقت إذا تم النقر مرة أخرى (جزء من النقر المزدوج)
-              clickTimer = setTimeout(() => {
-                if (!window.getSelection().toString()) {
-                  textarea.style.pointerEvents = "auto"; // تمكين الكتابة
-                  textarea.focus();
-                }
-              }, 200); // تأخير 200 ميلي ثانية
+            // عند النقر على المحرر، يتم التركيز على منطقة الكتابة وتمكينها
+            editorWrapper.addEventListener("click", () => {
+              // تمكين الكتابة دائمًا عند النقر على المحرر
+              textarea.style.pointerEvents = "auto";
+              textarea.focus();
             });
+
+            // عند فقدان التركيز من منطقة الكتابة، يتم تحديث التمييز وإعادة الوضع الافتراضي
+            textarea.addEventListener("blur", () => {
+              // إعادة تعطيل مؤشر الفأرة للسماح بالضغط المزدوج على التواريخ مرة أخرى
+              textarea.style.pointerEvents = "none";
+            });
+            // تحديث التمييز فقط عند فقدان التركيز بشكل كامل من المحرر
+            editorWrapper.addEventListener("focusout", updateHighlight);
 
             editorWrapper.appendChild(highlighter);
             editorWrapper.appendChild(textarea);
