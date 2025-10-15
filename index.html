@@ -383,7 +383,7 @@
 
         function openDB() {
           return new Promise((resolve, reject) => {
-            const request = indexedDB.open(dbName, 1);
+            const request = indexedDB.open(dbName, 2); // زيادة رقم الإصدار
 
             request.onupgradeneeded = (event) => {
               const db = event.target.result;
@@ -392,6 +392,12 @@
                   keyPath: "id",
                   autoIncrement: true,
                 });
+              }
+              // التأكد من وجود جدول محتوى الموضوعات
+              const topicsStoreName = "topicsContent";
+              if (!db.objectStoreNames.contains(topicsStoreName)) {
+                // يستخدم 'id' من قائمة المواضيع كـ keyPath، وليس autoIncrement
+                db.createObjectStore(topicsStoreName, { keyPath: "id" });
               }
             };
 
