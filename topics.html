@@ -451,8 +451,8 @@
             // دالة لتحديث التمييز
             const updateHighlight = () => {
               const text = textarea.value;
-              // Regex للبحث عن التواريخ بصيغة DD-MM-YYYY
-              const dateRegex = /\b(\d{1,2}-\d{1,2}-\d{4})\b/g;
+              // Regex للبحث عن التواريخ بصيغة DD-MM-YYYY مع تحسين للتعامل مع اللغات المختلفة
+              const dateRegex = /\b(\d{1,2}-\d{1,2}-\d{4})(?!\d)/g;
               // استبدال التواريخ بعنصر span لتلوينها
               const highlightedText = text
                 .replace(/&/g, "&amp;")
