@@ -536,6 +536,7 @@
             await saveDataToDB(fileData);
             // إعادة تحميل البيانات في الواجهة بعد الحفظ
             await loadAndPopulateData();
+            alert("تم التحديث بنجاح من الملف.");
           } catch (error) {
             console.error("Error loading or saving data:", error);
             alert("فشل تحميل أو حفظ البيانات.");
