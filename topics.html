@@ -199,8 +199,8 @@
         const topicsList = [
           { id: "1", name: "مسؤوليه المهندس المشرف" },
           { id: "2", name: "الحيادية والعدل" },
-          { id: "3", name: "تنسيق أعمال" },
-          { id: "4", name: "سلامة وصحة مهنية" },
+          { id: "3", name: "محضر تسليم موقع" },
+          { id: "4", name: "الكيد لي لالحاق الضرر" },
           { id: "5", name: "طلبات ومراسلات" },
           { id: "6", name: "موضوع عام" },
         ];
@@ -451,8 +451,8 @@
             // دالة لتحديث التمييز
             const updateHighlight = () => {
               const text = textarea.value;
-              // Regex للبحث عن التواريخ بصيغة DD-MM-YYYY
-              const dateRegex = /\b(\d{1,2}-\d{1,2}-\d{4})\b/g;
+              // Regex للبحث عن التواريخ بصيغة DD-MM-YYYY مع تحسين للتعامل مع اللغات المختلفة
+              const dateRegex = /\b(\d{1,2}-\d{1,2}-\d{4})(?!\d)/g;
               // استبدال التواريخ بعنصر span لتلوينها
               const highlightedText = text
                 .replace(/&/g, "&amp;")
