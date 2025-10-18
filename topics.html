@@ -115,7 +115,7 @@
       .editor-wrapper > textarea {
         z-index: 1;
         background-color: transparent;
-        color: inherit;
+        color: #1c1e21; /* لون نص واضح للكتابة */
         pointer-events: none; /* السماح للنقرات بالمرور إلى الطبقة السفلية بشكل افتراضي */
       }
       .editor-wrapper > #highlighter {
@@ -201,7 +201,7 @@
           { id: "2", name: "الحيادية والعدل" },
           { id: "3", name: "محضر تسليم موقع" },
           { id: "4", name: "الكيد لي لالحاق الضرر" },
-          { id: "5", name: "طلبات ومراسلات" },
+          { id: "5", name: "اخفاء مستندات" },
           { id: "6", name: "موضوع عام" },
         ];
 
@@ -417,28 +417,49 @@
             const highlighter = document.createElement("div");
             highlighter.id = "highlighter";
 
-            // إضافة حدث الضغط المزدوج للانتقال للحدث
-            highlighter.addEventListener("dblclick", async (e) => {
-              if (e.target.classList.contains("date-highlight")) {
-                console.log("[تتبع] تم النقر المزدوج على عنصر تاريخ.");
-                const dateText = e.target.textContent;
-                console.log(
-                  `[تتبع] نص التاريخ الذي تم النقر عليه: "${dateText}"`
-                );
-                try {
-                  const event = await findEventByDate(dateText);
-                  if (event) {
-                    console.log(
-                      `[تتبع] تم العثور على الحدث، جاري الانتقال إلى: index.html?eventId=${event.id}`
-                    );
-                    window.location.href = `index.html?eventId=${event.id}`;
-                  } else {
-                    alert(`لم يتم العثور على حدث مرتبط بالتاريخ: ${dateText}`);
-                  }
-                } catch (error) {
-                  console.error("Error navigating to event:", error);
-                  alert("حدث خطأ أثناء محاولة الانتقال للحدث.");
+            // متغير لتتبع وقت آخر نقرة لاكتشاف النقر المزدوج على الموبايل
+            let lastTap = 0;
+
+            // دالة لمعالجة الانتقال عند النقر المزدوج على التاريخ
+            const handleDateNavigation = async (dateText) => {
+              console.log(
+                `[تتبع] تم اكتشاف نقرة مزدوجة/نقر سريع على التاريخ: "${dateText}"`
+              );
+              try {
+                const event = await findEventByDate(dateText);
+                if (event) {
+                  console.log(
+                    `[تتبع] تم العثور على الحدث، جاري الانتقال إلى: index.html?eventId=${event.id}`
+                  );
+                  window.location.href = `index.html?eventId=${event.id}`;
+                } else {
+                  alert(`لم يتم العثور على حدث مرتبط بالتاريخ: ${dateText}`);
                 }
+              } catch (error) {
+                console.error("Error navigating to event:", error);
+                alert("حدث خطأ أثناء محاولة الانتقال للحدث.");
+              }
+            };
+
+            // إعادة إضافة حدث "dblclick" لأجهزة الكمبيوتر المكتبية (الأكثر موثوقية)
+            highlighter.addEventListener("dblclick", (e) => {
+              if (e.target.classList.contains("date-highlight")) {
+                e.preventDefault();
+                handleDateNavigation(e.target.textContent);
+              }
+            });
+
+            // استخدام حدث "click" بدلاً من "dblclick" لضمان التوافق مع الموبايل
+            highlighter.addEventListener("click", (e) => {
+              if (e.target.classList.contains("date-highlight")) {
+                const currentTime = new Date().getTime();
+                const tapLength = currentTime - lastTap;
+                if (tapLength < 300 && tapLength > 0) {
+                  // نقرة مزدوجة
+                  e.preventDefault();
+                  handleDateNavigation(e.target.textContent);
+                }
+                lastTap = currentTime;
               }
             });
 
@@ -480,15 +501,14 @@
             // عند النقر على المحرر، يتم التركيز على منطقة الكتابة وتمكينها
             editorWrapper.addEventListener("click", () => {
               // تمكين الكتابة دائمًا عند النقر على المحرر
-              textarea.style.pointerEvents = "auto";
+              if (textarea.style.pointerEvents !== "auto") {
+                textarea.style.pointerEvents = "auto";
+              }
               textarea.focus();
             });
 
             // عند فقدان التركيز من منطقة الكتابة، يتم تحديث التمييز وإعادة الوضع الافتراضي
-            textarea.addEventListener("blur", () => {
-              // إعادة تعطيل مؤشر الفأرة للسماح بالضغط المزدوج على التواريخ مرة أخرى
-              textarea.style.pointerEvents = "none";
-            });
+            textarea.addEventListener("blur", () => {});
             // تحديث التمييز فقط عند فقدان التركيز بشكل كامل من المحرر
             editorWrapper.addEventListener("focusout", updateHighlight);
 
