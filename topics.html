@@ -326,7 +326,7 @@
 
         loadButton.addEventListener("click", async () => {
           try {
-            const response = await fetch("topics_data.json");
+            const response = await fetch("./topics_data.json");
             if (response.ok) {
               const fileData = await response.json();
               await importData(fileData);

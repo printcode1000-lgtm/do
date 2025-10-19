@@ -528,7 +528,7 @@
 
         loadButton.addEventListener("click", async () => {
           try {
-            const response = await fetch("111.json");
+            const response = await fetch("./111.json");
             if (!response.ok) {
               throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -803,7 +803,7 @@
               eventsData = dbData;
             } else {
               // إذا كانت فارغة، قم بالتحميل من الملف وحفظه في قاعدة البيانات
-              const response = await fetch("111.json");
+              const response = await fetch("./111.json");
               if (!response.ok) throw new Error("File not found");
               const fileData = await response.json();
               await saveDataToDB(fileData); // حفظ البيانات تلقائياً في قاعدة البيانات
